@@ -54,74 +54,76 @@ Closure is intentionally **manual** — it's a quality gate, not an auto-step:
 /bmad-iso29110-close
 ```
 
-This runs a 6-step closure workflow:
+This runs a 7-step closure workflow with remediation loop:
 1. **Pre-flight check** — verify all BMAD artifacts exist (PRD, architecture, epics, etc.)
-2. **Generate test report** — collate E2E results into formal test report
-3. **Generate acceptance record** — stakeholder sign-off with acceptance criteria
-4. **Generate closure report** — final project summary with metrics
-5. **Compliance audit** — verify all 14 ISO 29110 work products present and complete
-6. **Archive + tag** — git commit + tag `iso29110-1.0.0` for audit trail
+2. **Generate missing phase docs** — auto-generate project plan + change log if not already created
+3. **Generate test report** — collate E2E results into formal test report
+4. **Generate acceptance record** — stakeholder sign-off with acceptance criteria
+5. **Generate closure report** — final project summary with metrics
+6. **Compliance audit + remediation loop**:
+   - Audit all 14 ISO 29110 work products + quality gaps (partial criteria, planned-not-done stories, missing companion files)
+   - Classify each gap as AUTO-FIXABLE or HUMAN-NEEDED
+   - Auto-fix: generate README, update sprint-status, create DESIGN.md/EXPERIENCE.md stubs
+   - Re-generate affected reports (acceptance, closure, traceability)
+   - Re-audit with before/after delta
+   - Handle remaining HUMAN-NEEDED gaps (resolve / accept with condition / block)
+7. **Archive + tag** — git commit + tag `iso29110-1.0.0` for audit trail
 
-If any work product is missing, the audit stops and reports the gap.
+The remediation loop ensures closure is **clean** — not just "documented gaps". Auto-fixable issues are resolved before the project is closed.
 
 ## Installation
 
-Requires an existing BMAD installation:
+> **IMPORTANT:** `iso-29110` is a custom module — you MUST use `--custom-source` to install it. Using `--modules iso-29110` alone will fail.
 
 ```bash
-# Option A: Install BMAD + ISO extension for Claude Code
+# Step 1: Install BMAD core
 npx bmad-method install \
   --directory . \
-  --modules bmm,iso-29110 \
+  --modules bmm \
   --tools claude-code \
   --yes
 
-# Option B: Install for Codex
-npx bmad-method install \
-  --directory . \
-  --modules bmm,iso-29110 \
-  --tools codex \
-  --yes
-
-# Option C: Multi-tool (Claude Code + Codex + Cursor)
-npx bmad-method install \
-  --directory . \
-  --modules bmm,iso-29110 \
-  --tools claude-code,codex,cursor \
-  --yes
-
-# Option D: Add ISO extension to existing BMAD project
+# Step 2: Install ISO extension
 npx bmad-method install \
   --directory . \
   --modules iso-29110 \
+  --custom-source https://github.com/JumpLao/bmad-iso-29110 \
+  --tools claude-code \
   --yes
 ```
 
-Works with any BMAD-supported tool: Claude Code, Codex, Cursor, GitHub Copilot, and 30+ others.
+Works with Claude Code, Codex, Cursor, GitHub Copilot, and 30+ other BMAD-supported tools.
 
 ### What Gets Installed
 
 ```
 your-project/
-├── .claude/skills/
-│   ├── bmad-iso29110-close/          # Closure + audit skill
-│   └── bmad-iso29110-generate/       # Document generator skill
-├── _bmad/custom/                     # Override hooks (auto-generation)
-│   ├── bmad-prd.toml                 # → traceability on PRD complete
-│   ├── bmad-create-epics-and-stories.toml  # → risk register on epics complete
-│   ├── bmad-sprint-planning.toml     # → project plan on sprint complete
-│   ├── bmad-qa-generate-e2e-tests.toml     # → test report on QA complete
-│   └── config.toml                   # Agent extensions (ISO awareness)
-├── _bmad-output/
-│   ├── iso-29110-templates/          # 7 document templates
-│   │   ├── project-plan-template.md
-│   │   ├── risk-register-template.md
-│   │   ├── traceability-matrix-template.md
-│   │   ├── test-report-template.md
-│   │   ├── acceptance-record-template.md
-│   │   ├── closure-report-template.md
-│   │   └── change-request-log-template.md
-│   └── compliance-reports/           # Generated docs land here
+├── .claude/skills/                    # or .agents/skills/ for Codex
+│   ├── bmad-iso29110-close/           # Closure + remediation skill
+│   │   └── SKILL.md
+│   └── bmad-iso29110-generate/        # Document generator skill
+│       ├── SKILL.md
+│       └── assets/
+│           ├── templates/             # 7 ISO document templates
+│           │   ├── project-plan-template.md
+│           │   ├── risk-register-template.md
+│           │   ├── traceability-matrix-template.md
+│           │   ├── test-report-template.md
+│           │   ├── acceptance-record-template.md
+│           │   ├── closure-report-template.md
+│           │   └── change-request-log-template.md
+│           └── overrides/             # 6 phase boundary hooks
+│               ├── bmad-prd.toml
+│               ├── bmad-create-epics-and-stories.toml
+│               ├── bmad-sprint-planning.toml
+│               ├── bmad-correct-course.toml
+│               ├── bmad-qa-generate-e2e-tests.toml
+│               └── config.toml
+├── _bmad/iso-29110/                   # Module config
+│   ├── config.yaml
+│   └── module-help.csv
+└── _bmad-output/
+    └── compliance-reports/            # Generated docs land here
 ```
 
 ## The 14 ISO 29110 Work Products
@@ -148,29 +150,34 @@ BMAD already produces 7 of the 14 required work products. This extension adds th
 ## Extension Architecture
 
 ```
-bmad-iso-29110/                        ← This repository
-├── .claude-plugin/marketplace.json     ← BMAD plugin registry
-├── .claude/skills/                     ← Claude skills
-│   ├── bmad-iso29110-close/SKILL.md    ← Closure workflow (6-step gate)
-│   └── bmad-iso29110-generate/SKILL.md ← Document generator (auto + manual)
-├── overrides/                          ← Phase boundary hooks
-│   ├── bmad-prd.toml                   ← After PRD → traceability
-│   ├── bmad-create-epics-and-stories.toml  ← After epics → risk register
-│   ├── bmad-sprint-planning.toml       ← After sprint → project plan
-│   ├── bmad-qa-generate-e2e-tests.toml ← After QA → test report
-│   └── config.toml                     ← Agent ISO awareness
-├── module.yaml                         ← Module config (variables, directories, overrides)
-├── module-help.csv                     ← Skill catalog for BMAD
-├── templates/                          ← 7 ISO 29110 templates
-│   ├── project-plan-template.md        ← 110 lines, 27 placeholders
-│   ├── risk-register-template.md       ← 70 lines, 14 placeholders
-│   ├── traceability-matrix-template.md ← 78 lines, 22 placeholders
-│   ├── test-report-template.md         ← 103 lines, 28 placeholders
-│   ├── acceptance-record-template.md   ← 90 lines, 27 placeholders
-│   ├── closure-report-template.md      ← 112 lines, 28 placeholders
-│   └── change-request-log-template.md  ← 84 lines, 18 placeholders
-└── README.md                           ← You are here
+bmad-iso-29110/                                ← This repository
+├── .claude-plugin/marketplace.json             ← BMAD plugin registry (skills array)
+├── .claude/skills/
+│   ├── bmad-iso29110-close/SKILL.md            ← Closure + remediation (7-step)
+│   └── bmad-iso29110-generate/
+│       ├── SKILL.md                             ← Document generator (auto + manual)
+│       └── assets/
+│           ├── templates/                       ← 7 ISO document templates
+│           └── overrides/                       ← 6 phase boundary hooks
+├── module.yaml                                 ← Module config (code, name, description)
+├── module-help.csv                             ← Skill catalog for BMAD
+└── README.md                                   ← You are here
 ```
+
+## Demo Project
+
+See a full end-to-end example: **[pomodoro-iso29110-demo](https://github.com/JumpLao/pomodoro-iso29110-demo)**
+
+A Python CLI Pomodoro timer built from spec to ISO 29110 compliance audit using **Codex + BMAD-METHOD + this extension**:
+
+- 12 functional requirements, 8 NFRs, 6 architecture decisions
+- 4 epics, 9 stories with Given/When/Then acceptance criteria
+- Python CLI implementation (stdlib only) + 13 unittest tests (all pass)
+- Full ISO 29110 compliance: **14/14 work products verified**
+- Remediation loop auto-fixed 5 gaps (missing README, DESIGN.md, EXPERIENCE.md, stale sprint-status, partial acceptance criterion)
+- Git tagged `iso29110-1.0.0`
+
+Tested with both **Claude Code** and **Codex** — skills work across both tools via `.claude/skills/` and `.agents/skills/` respectively.
 
 ## Template Variables
 
