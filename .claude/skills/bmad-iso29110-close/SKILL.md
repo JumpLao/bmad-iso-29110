@@ -27,21 +27,36 @@ Verify all required BMAD artifacts exist:
 
 If any are missing: STOP and report which are needed.
 
-## Step 1: Generate Test Report
+## Step 1: Generate Missing Phase Documents
+
+Before the audit, check if any phase-generated documents are missing and generate them:
+
+1. **Project Plan** — if `_bmad-output/compliance-reports/project-plan.md` does not exist:
+   - Read `sprint-status.yaml` and `epics.md`
+   - Generate using `bmad-iso29110-generate project-plan`
+   - Log: "ISO 29110: Project plan was not generated during sprint planning — generating now."
+
+2. **Change Request Log** — if `_bmad-output/compliance-reports/change-request-log.md` does not exist:
+   - Check for `sprint-change-proposal-*.md` files
+   - If proposals exist: generate using `bmad-iso29110-generate change-log`
+   - If no proposals: create a stub stating "No scope changes were made during this project."
+   - Log: "ISO 29110: Change request log was not generated during correct-course — generating now."
+
+## Step 2: Generate Test Report
 
 Read E2E test results, collate into `{compliance_reports}/test-report.md`:
 - Total tests, pass/fail counts
 - Cross-tenant isolation evidence (AC4)
 - Build verification status
 
-## Step 2: Generate Acceptance Record
+## Step 3: Generate Acceptance Record
 
 Create `{compliance_reports}/acceptance-record.md`:
 - Map all P0/P1 stories to acceptance criteria
 - Stakeholder sign-off table
 - Open issues (accepted with conditions)
 
-## Step 3: Generate Closure Report
+## Step 4: Generate Closure Report
 
 Create `{compliance_reports}/closure-report.md`:
 - Outcome vs objectives
@@ -49,7 +64,7 @@ Create `{compliance_reports}/closure-report.md`:
 - Lessons learned
 - Carry-forward items
 
-## Step 4: Compliance Audit
+## Step 5: Compliance Audit
 
 Check all 14 ISO 29110 work products:
 
@@ -72,7 +87,7 @@ Check all 14 ISO 29110 work products:
 
 Report any missing as 🔴 gap.
 
-## Step 5: Archive + Tag
+## Step 6: Archive + Tag
 
 ```bash
 git add -A

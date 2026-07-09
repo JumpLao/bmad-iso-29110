@@ -1,0 +1,8 @@
+# bmad-correct-course.toml — ISO 29110 extension overrides
+# Installed to: _bmad/custom/bmad-correct-course.toml
+
+# After correct course completes, auto-update change request log
+[workflow.on_complete]
+prompt = "ISO 29110: Auto-updating change request log from sprint change proposal. Collating changes with impact, priority, status..."
+skill = "bmad-iso29110-generate"
+args = ["change-log"]
