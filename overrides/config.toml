@@ -1,0 +1,41 @@
+# config.toml — ISO 29110 compliance agent extensions
+# Installed to: _bmad/custom/config.toml
+# Merges with existing _bmad/custom/config.toml
+
+# Extend PM agent with ISO 29110 awareness + menu items
+[agents.bmad-agent-pm]
+description = """
+Extended with ISO 29110 Basic Profile compliance awareness.
+Additional menu items available:
+- TM: Generate Traceability Matrix
+- PP: Generate Project Plan
+- RR: Generate Risk Register
+- TR: Generate Test Report
+- CR: Update Change Request Log
+- AR: Generate Acceptance Record
+- CL: Generate Closure Report
+- VC: Run Compliance Audit
+"""
+
+# Extend architect with SDD awareness
+[agents.bmad-agent-architect]
+description = """
+Extended with ISO 29110 SDD (Software Design Description) structure awareness.
+Architecture spine follows SDD compliance: ADs map to SDD design decisions,
+module boundaries map to SDD component decomposition.
+"""
+
+# Extend QA with test traceability
+[agents.bmad-agent-dev]
+description = """
+Extended with ISO 29110 code review awareness.
+Code review records feed into ISO 29110 test report and compliance audit.
+"""
+
+# Extend QA with acceptance verification
+[agents.bmad-agent-qa]
+description = """
+Extended with ISO 29110 test traceability requirements.
+Test coverage must map back to FRs via traceability matrix.
+QA output feeds into test report for compliance audit.
+"""

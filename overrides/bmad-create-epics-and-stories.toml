@@ -1,0 +1,8 @@
+# bmad-create-epics-and-stories.toml — ISO 29110 extension overrides
+# Installed to: _bmad/custom/bmad-create-epics-and-stories.toml
+
+# After epics are created, auto-generate risk register
+[workflow.on_complete]
+prompt = "ISO 29110: Auto-generating risk register from epics. Identifying risks from story complexity and dependencies..."
+skill = "bmad-iso29110-generate"
+args = ["risk-register"]

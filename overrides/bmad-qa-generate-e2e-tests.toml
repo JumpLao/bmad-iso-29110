@@ -1,0 +1,8 @@
+# bmad-qa-generate-e2e-tests.toml — ISO 29110 extension overrides
+# Installed to: _bmad/custom/bmad-qa-generate-e2e-tests.toml
+
+# After QA generates tests, auto-generate test report
+[workflow.on_complete]
+prompt = "ISO 29110: Auto-generating test report from QA results. Collating pass/fail, cross-tenant evidence..."
+skill = "bmad-iso29110-generate"
+args = ["test-report"]

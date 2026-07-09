@@ -1,0 +1,8 @@
+# bmad-prd.toml — ISO 29110 extension overrides for bmad-prd
+# Installed to: _bmad/custom/bmad-prd.toml
+
+# After PRD completes, auto-seed the traceability matrix
+[workflow.on_complete]
+prompt = "ISO 29110: Auto-generating traceability matrix seed from PRD. Reading FRs and creating _bmad-output/compliance-reports/traceability-matrix.md..."
+skill = "bmad-iso29110-generate"
+args = ["traceability"]

@@ -1,0 +1,8 @@
+# bmad-sprint-planning.toml — ISO 29110 extension overrides
+# Installed to: _bmad/custom/bmad-sprint-planning.toml
+
+# After sprint planning, auto-generate project plan
+[workflow.on_complete]
+prompt = "ISO 29110: Auto-generating project plan from sprint status. Building schedule, milestones, team structure..."
+skill = "bmad-iso29110-generate"
+args = ["project-plan"]

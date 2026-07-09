@@ -1,6 +1,6 @@
 code: iso-29110
 name: "ISO 29110 Compliance"
-description: "ISO/IEC 29110 Basic Profile compliance extension — adds process documentation, traceability matrix, risk register, and compliance audit to BMAD-METHOD projects."
+description: "ISO/IEC 29110 Basic Profile compliance extension — adds process documentation, traceability matrix, risk register, and compliance audit to BMAD-METHOD projects. Auto-generates ISO docs at each phase boundary."
 default_selected: false
 
 compliance_reports:
@@ -18,16 +18,33 @@ directories:
   - "{compliance_reports}"
   - "{iso_templates}"
   - "{project-root}/.claude/skills/bmad-iso29110-close"
+  - "{project-root}/.claude/skills/bmad-iso29110-generate"
 
-# Custom agents — extend existing BMAD agents with ISO awareness
-agents:
-  bmad-agent-pm:
-    description: >
-      Extended with ISO 29110 PM menu items: TM (Traceability Matrix),
-      PP (Project Plan), RR (Risk Register), TR (Test Report),
-      CR (Change Request Log), AR (Acceptance Record), CL (Closure Report),
-      VC (Compliance Audit).
-  bmad-agent-architect:
-    description: >
-      Extended with SDD (Software Design Description) structure awareness
-      and Configuration Management requirements from ISO 29110.
+# Custom agent overrides — extend existing BMAD agents with ISO awareness
+# Installed to _bmad/custom/ — merges with existing config.toml
+overrides:
+  # After PRD → auto-seed traceability matrix
+  - source: "overrides/bmad-prd.toml"
+    target: "{project-root}/_bmad/custom/bmad-prd.toml"
+    merge: append
+  # After Epics → auto-generate risk register
+  - source: "overrides/bmad-create-epics-and-stories.toml"
+    target: "{project-root}/_bmad/custom/bmad-create-epics-and-stories.toml"
+    merge: append
+  # After Sprint Planning → auto-generate project plan
+  - source: "overrides/bmad-sprint-planning.toml"
+    target: "{project-root}/_bmad/custom/bmad-sprint-planning.toml"
+    merge: append
+  # After QA → auto-generate test report
+  - source: "overrides/bmad-qa-generate-e2e-tests.toml"
+    target: "{project-root}/_bmad/custom/bmad-qa-generate-e2e-tests.toml"
+    merge: append
+  # Agent extensions — ISO awareness for PM/architect/dev/qa
+  - source: "overrides/config.toml"
+    target: "{project-root}/_bmad/custom/config.toml"
+    merge: deep
+
+# Templates copied to project during install
+templates:
+  - source: "templates/"
+    target: "{iso_templates}/"
