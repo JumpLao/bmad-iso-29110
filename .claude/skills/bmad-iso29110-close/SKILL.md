@@ -1,11 +1,11 @@
 ---
 name: bmad-iso29110-close
-description: "ISO/IEC 29110 Basic Profile closure workflow. Verify all 14 work products, generate compliance artifacts, run audit, and archive. Use when the user says 'close project' or 'ISO closure' or 'compliance audit'."
+description: "ISO/IEC 29110 Basic Profile closure workflow. Verify all 14 work products, generate compliance artifacts, run audit, remediate gaps, and archive. Use when the user says 'close project' or 'ISO closure' or 'compliance audit'."
 ---
 
 # ISO 29110 Closure Workflow
 
-Run this at project closure to verify compliance and generate final artifacts.
+Run this at project closure to verify compliance, remediate gaps, and generate final artifacts.
 
 ## On Activation
 
@@ -25,7 +25,7 @@ Verify all required BMAD artifacts exist:
 ✅/❌ DESIGN.md + EXPERIENCE.md
 ```
 
-If any are missing: STOP and report which are needed.
+If any are missing: note them — the remediation loop (Step 6) will attempt to generate missing BMAD support files.
 
 ## Step 1: Generate Missing Phase Documents
 
@@ -64,7 +64,7 @@ Create `{compliance_reports}/closure-report.md`:
 - Lessons learned
 - Carry-forward items
 
-## Step 5: Compliance Audit
+## Step 5: Compliance Audit (First Pass)
 
 Check all 14 ISO 29110 work products:
 
@@ -85,16 +85,134 @@ Check all 14 ISO 29110 work products:
 | 13 | Closure Report | closure-report.md | |
 | 14 | Change Request Log | change-request-log.md | |
 
-Report any missing as 🔴 gap.
+Also check for **quality gaps** (work product exists but content is incomplete):
+- Scan acceptance-record for "Partially" criteria
+- Scan sprint-status for stories still "planned" when code exists
+- Scan closure-report for "carry-forward" or "conditional" items
+- Check for missing companion artifacts: README.md, DESIGN.md, EXPERIENCE.md
 
-## Step 6: Archive + Tag
+Report all issues as 🔴 gap or 🟡 quality issue.
+
+**If all 14 pass with no quality gaps → skip to Step 7 (Archive).**
+
+## Step 6: Remediation Loop
+
+When the audit finds gaps or quality issues, classify and resolve them before closing.
+
+### 6a: Classify Each Gap
+
+For every 🔴 gap and 🟡 quality issue, classify as AUTO-FIXABLE or HUMAN-NEEDED:
+
+| Classification | Criteria | Examples |
+|---------------|----------|----------|
+| **AUTO-FIXABLE** | Missing artifact can be generated from existing project data | README, DESIGN.md, EXPERIENCE.md stub, sprint-status update, traceability re-generation |
+| **HUMAN-NEEDED** | Requires a business/product decision or external sign-off | Stakeholder acceptance, unresolved OQs, genuinely unimplemented features |
+
+Present the classification table to the user:
+
+```
+Gap Classification:
+┌──────────────────────────────────────┬──────────────┬────────────────────────────────┐
+│ Gap                                  │ Type         │ Remediation                    │
+├──────────────────────────────────────┼──────────────┼────────────────────────────────┤
+│ Missing README.md                    │ AUTO-FIXABLE │ Generate from PRD + source     │
+│ sprint-status stories still planned  │ AUTO-FIXABLE │ Update to done (code verified) │
+│ DESIGN.md missing                    │ AUTO-FIXABLE │ Derive from architecture.md    │
+│ Acceptance AC-007 "Partially"        │ AUTO-FIXABLE │ Fix root cause (missing doc)   │
+│ Stakeholder sign-off pending         │ HUMAN-NEEDED │ Ask user to approve/defer      │
+│ OQ: interrupted-session policy       │ HUMAN-NEEDED │ Ask user to decide/defer       │
+└──────────────────────────────────────┴──────────────┴────────────────────────────────┘
+```
+
+### 6b: Auto-Fix AUTO-FIXABLE Gaps
+
+Execute fixes for each AUTO-FIXABLE gap. Common fixes:
+
+1. **Missing README.md** → Generate from PRD + architecture + source code:
+   - Project overview (from product-brief.md)
+   - Installation (Python version, no deps)
+   - Usage (commands from CLI --help output)
+   - Configuration (default paths and settings)
+
+2. **sprint-status stories still "planned"** when implementation exists → Update each story:
+   - Read source files and test results
+   - If code + tests exist for a story → set `status: done`
+   - If code exists but no tests → set `status: in-progress`
+   - Regenerate acceptance-record and closure-report to reflect updated statuses
+
+3. **Missing DESIGN.md** → Derive from architecture.md:
+   - Copy architecture decisions, component diagram, tech stack
+   - Add DESIGN.md reference to pre-flight check
+
+4. **Missing EXPERIENCE.md** → Create appropriate stub:
+   - For CLI/API projects: "This project has no graphical UI. User experience is defined by CLI command behavior documented in PRD and README."
+   - For web/app projects: flag as HUMAN-NEEDED (UX must be authored)
+
+5. **Acceptance criteria "Partially"** → Fix the root cause:
+   - If partial because of missing README → generate README, then re-evaluate as "Yes"
+   - If partial because story not implemented → stays HUMAN-NEEDED
+
+Log each fix: "🔧 Remediated: {gap} → {action taken}"
+
+### 6c: Re-Generate Affected Reports
+
+After auto-fixes, regenerate any reports whose inputs changed:
+- If sprint-status changed → regenerate acceptance-record, closure-report
+- If README created → update acceptance criteria evaluation
+- If traceability gaps fixed → regenerate traceability-matrix
+
+### 6d: Re-Audit
+
+Run the 14-work-product audit again. Report the delta:
+```
+Re-Audit Results:
+Before: X/14 pass, Y gaps
+After:  Z/14 pass, W gaps (remaining are HUMAN-NEEDED)
+Delta:  +N auto-fixed
+```
+
+### 6e: Handle HUMAN-NEEDED Gaps
+
+For each remaining HUMAN-NEEDED gap, present options to the user:
+
+```
+⚠️ HUMAN-NEEDED — {gap description}
+  1. Resolve now (provide answer/decision)
+  2. Accept with condition (carry-forward to next sprint)
+  3. Block closure (stop here)
+```
+
+- If user resolves → fix and re-audit
+- If user accepts with condition → record in closure-report and acceptance-record as "Accepted with Condition"
+- If user blocks → STOP, do not archive
+
+**All HUMAN-NEEDED gaps must be either resolved or accepted before proceeding to Step 7.**
+
+## Step 7: Archive + Tag
+
+Only reached when all 14 work products pass AND all quality gaps are resolved or accepted.
 
 ```bash
 git add -A
-git commit -m "ISO 29110 closure: compliance audit complete"
+git commit -m "ISO 29110 closure: compliance audit complete (14/14 pass, N remediated)"
 git tag iso29110-1.0.0
 ```
 
 ## Output
 
-Summary table showing pass/fail per work product, plus git tag confirmation.
+Final summary:
+
+```
+ISO 29110 Closure — Final Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Work Products: 14/14 ✅
+Quality Gaps:  0 remaining (N auto-fixed, M accepted with condition)
+
+Remediation Summary:
+  🔧 Auto-fixed: {list}
+  📋 Accepted with condition: {list}
+  ✅ Human-resolved: {list}
+
+Git: tag iso29110-1.0.0 created
+Closure status: COMPLETE
+```
