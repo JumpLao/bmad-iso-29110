@@ -12,7 +12,9 @@
 | **Project Name** | {{project_name}} |
 | **Project ID** | {{project_id}} |
 | **Version** | {{test_report_version}} |
-| **Date** | {{date_created}} |
+| **Date Created** | {{date_created}} |
+| **Last Updated** | {{last_updated}} |
+| **Prepared By** | {{author}} |
 | **Tested By** | {{tester}} |
 | **Build Version** | {{build_version}} |
 

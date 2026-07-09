@@ -12,7 +12,8 @@
 | **Project Name** | {{project_name}} |
 | **Project ID** | {{project_id}} |
 | **Version** | {{closure_version}} |
-| **Date** | {{date_created}} |
+| **Date Created** | {{date_created}} |
+| **Last Updated** | {{last_updated}} |
 | **Prepared By** | {{author}} |
 | **Closure Date** | {{closure_date}} |
 
