@@ -69,19 +69,35 @@ If any work product is missing, the audit stops and reports the gap.
 Requires an existing BMAD installation:
 
 ```bash
-# Option A: Install BMAD + ISO extension together (new project)
+# Option A: Install BMAD + ISO extension for Claude Code
 npx bmad-method install \
   --directory . \
   --modules bmm,iso-29110 \
   --tools claude-code \
   --yes
 
-# Option B: Add ISO extension to existing BMAD project
+# Option B: Install for Codex
+npx bmad-method install \
+  --directory . \
+  --modules bmm,iso-29110 \
+  --tools codex \
+  --yes
+
+# Option C: Multi-tool (Claude Code + Codex + Cursor)
+npx bmad-method install \
+  --directory . \
+  --modules bmm,iso-29110 \
+  --tools claude-code,codex,cursor \
+  --yes
+
+# Option D: Add ISO extension to existing BMAD project
 npx bmad-method install \
   --directory . \
   --modules iso-29110 \
   --yes
 ```
+
+Works with any BMAD-supported tool: Claude Code, Codex, Cursor, GitHub Copilot, and 30+ others.
 
 ### What Gets Installed
 
