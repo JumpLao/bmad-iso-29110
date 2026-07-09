@@ -8,7 +8,11 @@
     {
       "name": "iso-29110",
       "source": "./",
-      "description": "ISO/IEC 29110 Basic Profile compliance extension for BMAD-METHOD"
+      "description": "ISO/IEC 29110 Basic Profile compliance extension for BMAD-METHOD",
+      "skills": [
+        ".claude/skills/bmad-iso29110-generate",
+        ".claude/skills/bmad-iso29110-close"
+      ]
     }
   ]
 }

@@ -12,6 +12,7 @@ Generate any of the 7 ISO 29110 compliance documents from existing BMAD artifact
 1. Resolve customization: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow`
 2. Load project config: `{project-root}/_bmad/bmm/config.yaml`
 3. Determine document type from user request or hook args
+4. **Ensure output directory exists:** `mkdir -p {project-root}/_bmad-output/compliance-reports`
 
 ## Auto-Generation Mode
 
@@ -75,18 +76,23 @@ When invoked by user (`/bmad-iso29110-generate traceability`):
 
 ## Template Usage
 
-Read template from `{iso_templates}/`, fill values from BMAD artifacts, write to `{compliance_reports}/`.
+Templates ship as skill assets. After install they live alongside SKILL.md in the skill directory.
 
 ```bash
-# Templates location (installed by module):
-ls {iso_templates}/
+# Templates are bundled in this skill's assets/ directory:
+ls {skill-root}/assets/templates/
+
+# Override hooks are in assets/overrides/:
+ls {skill-root}/assets/overrides/
 ```
+
+`{skill-root}` resolves to the installed skill directory (e.g., `.claude/skills/bmad-iso29110-generate/`).
 
 ## Workflow
 
-1. Read the requested template from `{iso_templates}/`
+1. Read the requested template from `{skill-root}/assets/templates/{type}-template.md`
 2. Read all source artifacts (PRD, epics, sprint-status, etc.)
 3. Populate template with actual data — replace `{{placeholder}}` with values
-4. Write to `{compliance_reports}/`
+4. Write to `{project-root}/_bmad-output/compliance-reports/{type}.md`
 5. If auto-mode: log "ISO 29110: Generated {document}"
 6. If manual-mode: report what was generated + any gaps found
