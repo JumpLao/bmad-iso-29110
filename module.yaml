@@ -1,0 +1,33 @@
+code: iso-29110
+name: "ISO 29110 Compliance"
+description: "ISO/IEC 29110 Basic Profile compliance extension — adds process documentation, traceability matrix, risk register, and compliance audit to BMAD-METHOD projects."
+default_selected: false
+
+compliance_reports:
+  prompt: "Where should ISO 29110 compliance reports be stored?"
+  default: "{output_folder}/compliance-reports"
+  result: "{project-root}/{value}"
+
+iso_templates:
+  prompt: "Where should ISO 29110 document templates be installed?"
+  default: "{output_folder}/iso-29110-templates"
+  result: "{project-root}/{value}"
+
+# Directories to create during installation
+directories:
+  - "{compliance_reports}"
+  - "{iso_templates}"
+  - "{project-root}/.claude/skills/bmad-iso29110-close"
+
+# Custom agents — extend existing BMAD agents with ISO awareness
+agents:
+  bmad-agent-pm:
+    description: >
+      Extended with ISO 29110 PM menu items: TM (Traceability Matrix),
+      PP (Project Plan), RR (Risk Register), TR (Test Report),
+      CR (Change Request Log), AR (Acceptance Record), CL (Closure Report),
+      VC (Compliance Audit).
+  bmad-agent-architect:
+    description: >
+      Extended with SDD (Software Design Description) structure awareness
+      and Configuration Management requirements from ISO 29110.

@@ -1,0 +1,14 @@
+{
+  "name": "bmad-iso-29110",
+  "owner": {
+    "name": "Nous Research",
+    "url": "https://github.com/nousresearch"
+  },
+  "plugins": [
+    {
+      "name": "iso-29110",
+      "source": "./",
+      "description": "ISO/IEC 29110 Basic Profile compliance extension for BMAD-METHOD"
+    }
+  ]
+}
